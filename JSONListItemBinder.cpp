@@ -25,57 +25,57 @@
 **
 ****************************************************************************/
 
-#include "JSONListItemBuilder.h"
+#include "JSONListItemBinder.h"
 #include <QDebug>
 
 
 QHash<QJsonValue::Type,
-void (Models::JSONListItemBuilder::*)
+void (Models::JSONListItemBinder::*)
 (const QString &keyName,
- const QJsonValue &jsonValue)> Models::JSONListItemBuilder::jsonToValue = Models::JSONListItemBuilder::initJsonToValueHash();
+ const QJsonValue &jsonValue)> Models::JSONListItemBinder::jsonToValue = Models::JSONListItemBinder::initJsonToValueHash();
 
 QHash<QJsonValue::Type,
-void (Models::JSONListItemBuilder::*)
+void (Models::JSONListItemBinder::*)
 (const QString &keyName,
- const QJsonValue &jsonValue)> Models::JSONListItemBuilder::initJsonToValueHash()
+ const QJsonValue &jsonValue)> Models::JSONListItemBinder::initJsonToValueHash()
 {
     QHash<QJsonValue::Type,
-            void (Models::JSONListItemBuilder::*)
+            void (Models::JSONListItemBinder::*)
             (const QString &keyName,
              const QJsonValue &jsonValue)> hash;
 
-    hash[QJsonValue::Null] = &Models::JSONListItemBuilder::valueFromNullOrUndefined;
-    hash[QJsonValue::Undefined] = &Models::JSONListItemBuilder::valueFromNullOrUndefined;
-    hash[QJsonValue::Object] = &Models::JSONListItemBuilder::valueFromQJsonObject;
-    hash[QJsonValue::Array] = &Models::JSONListItemBuilder::valueFromQJsonArray;
-    hash[QJsonValue::Bool] = &Models::JSONListItemBuilder::valueFromScalar;
-    hash[QJsonValue::String] = &Models::JSONListItemBuilder::valueFromScalar;
-    hash[QJsonValue::Double] = &Models::JSONListItemBuilder::valueFromScalar;
+    hash[QJsonValue::Null] = &Models::JSONListItemBinder::valueFromNullOrUndefined;
+    hash[QJsonValue::Undefined] = &Models::JSONListItemBinder::valueFromNullOrUndefined;
+    hash[QJsonValue::Object] = &Models::JSONListItemBinder::valueFromQJsonObject;
+    hash[QJsonValue::Array] = &Models::JSONListItemBinder::valueFromQJsonArray;
+    hash[QJsonValue::Bool] = &Models::JSONListItemBinder::valueFromScalar;
+    hash[QJsonValue::String] = &Models::JSONListItemBinder::valueFromScalar;
+    hash[QJsonValue::Double] = &Models::JSONListItemBinder::valueFromScalar;
 
     return hash;
 }
 
-Models::JSONListItemBuilder::JSONListItemBuilder(Models::ListItem *item)
+Models::JSONListItemBinder::JSONListItemBinder(Models::ListItem *item)
     : item(item)
 {
 }
 
-Models::JSONListItemBuilder::~JSONListItemBuilder()
+Models::JSONListItemBinder::~JSONListItemBinder()
 {
 }
 
-void Models::JSONListItemBuilder::fromQJsonValue(const QJsonValue &jsonValue, Models::ListItem *item)
+void Models::JSONListItemBinder::fromQJsonValue(const QJsonValue &jsonValue, Models::ListItem *item)
 {
     if (item == NULL)
         return ;
 
-    Models::JSONListItemBuilder instance(item);
+    Models::JSONListItemBinder instance(item);
 
     instance.nameToRoles = item->roleTypesFromName();
     (instance.*jsonToValue[jsonValue.type()])("", jsonValue);
 }
 
-void Models::JSONListItemBuilder::valueFromQJsonObject(const QString &keyName, const QJsonValue &jsonValue)
+void Models::JSONListItemBinder::valueFromQJsonObject(const QString &keyName, const QJsonValue &jsonValue)
 {
     QJsonObject obj = jsonValue.toObject();
 
@@ -86,7 +86,7 @@ void Models::JSONListItemBuilder::valueFromQJsonObject(const QString &keyName, c
     }
 }
 
-void Models::JSONListItemBuilder::valueFromQJsonArray(const QString &keyName, const QJsonValue &jsonValue)
+void Models::JSONListItemBinder::valueFromQJsonArray(const QString &keyName, const QJsonValue &jsonValue)
 {
     QJsonArray array = jsonValue.toArray();
 
@@ -94,13 +94,13 @@ void Models::JSONListItemBuilder::valueFromQJsonArray(const QString &keyName, co
         (this->*jsonToValue[val.type()])(keyName, val);
 }
 
-void Models::JSONListItemBuilder::valueFromScalar(const QString &keyName, const QJsonValue &jsonValue)
+void Models::JSONListItemBinder::valueFromScalar(const QString &keyName, const QJsonValue &jsonValue)
 {
     if (this->nameToRoles.contains(keyName.toLocal8Bit()))
         this->item->setData(this->nameToRoles[keyName.toLocal8Bit()], jsonValue.toVariant());
 }
 
-void Models::JSONListItemBuilder::valueFromNullOrUndefined(const QString &keyName, const QJsonValue &jsonValue)
+void Models::JSONListItemBinder::valueFromNullOrUndefined(const QString &keyName, const QJsonValue &jsonValue)
 {
     qDebug() << "Value is null or undefined for " << keyName;
 }

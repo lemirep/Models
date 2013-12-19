@@ -34,23 +34,23 @@
 namespace Models
 {
 
-class JSONListItemBuilder
+class JSONListItemBinder
 {
 private:
-    JSONListItemBuilder(Models::ListItem *item);
+    JSONListItemBinder(Models::ListItem *item);
 
     Models::ListItem *item;
 
 public:
-    virtual ~JSONListItemBuilder();
+    virtual ~JSONListItemBinder();
     static void fromQJsonValue(const QJsonValue &jsonValue, Models::ListItem *item);
 
 protected :
     static QHash<QJsonValue::Type,
-    void (JSONListItemBuilder::*)(const QString &keyName,
+    void (JSONListItemBinder::*)(const QString &keyName,
                                   const QJsonValue &jsonValue)> jsonToValue;
     static QHash<QJsonValue::Type,
-    void (JSONListItemBuilder::*)(const QString &keyName,
+    void (JSONListItemBinder::*)(const QString &keyName,
                                   const QJsonValue &jsonValue)> initJsonToValueHash();
     QHash<QByteArray, int> nameToRoles;
 
