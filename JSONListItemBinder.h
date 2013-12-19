@@ -28,7 +28,7 @@
 #ifndef JSONLISTITEM_H
 #define JSONLISTITEM_H
 
-#include "ListItem.h"
+#include "SubListedListItem.h"
 #include <QJsonValue>
 
 namespace Models
