@@ -3,7 +3,6 @@
 
 #include "ListItem.h"
 
-
 namespace Models
 {
 class ListModel;
