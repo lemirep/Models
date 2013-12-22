@@ -50,6 +50,8 @@ public:
     bool                    sortingEnabled() const;
     void                    setSorting(bool value);
 
+    ListItem*               getPrototype() const;
+
 protected:
     ListItem *prototype;
     QList<ListItem *> items;

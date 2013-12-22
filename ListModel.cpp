@@ -354,6 +354,15 @@ void Models::ListModel::setSorting(bool value)
     this->sort();
 }
 
+/*!
+ * Returns the ListItem prototype associated to the given model.
+ */
+
+Models::ListItem *Models::ListModel::getPrototype() const
+{
+    return this->prototype;
+}
+
 bool compareFunc(void *a, void *b)
 {
     return *reinterpret_cast<Models::ListItem *>(a) < *reinterpret_cast<Models::ListItem *>(b);

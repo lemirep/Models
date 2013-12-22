@@ -2,10 +2,13 @@
 #include <QDebug>
 
 
-Models::ListItem::ListItem(QObject *parent) : QObject(parent)
+Models::ListItem::ListItem(QObject *parent) : QObject(parent),
+    parentItem(qobject_cast<ListItem *>(parent))
 {
     if (qobject_cast<ListItem *>(parent) != NULL)
-        qDebug() << "Parent is a listItem";
+    {
+        qDebug() << "Parent is a list item";
+    }
 }
 
 bool Models::ListItem::setData(int role, const QVariant &value)
@@ -36,3 +39,4 @@ bool Models::ListItem::operator<(const Models::ListItem &nextElem)
     Q_UNUSED(nextElem);
     return false;
 }
+

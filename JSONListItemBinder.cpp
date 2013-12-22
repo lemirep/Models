@@ -79,7 +79,8 @@ void Models::JSONListItemBinder::valueFromQJsonObject(const QString &keyName, co
 {
     QJsonObject obj = jsonValue.toObject();
 
-    foreach (const QString &keyName, obj.keys())
+    QStringList keys = obj.keys();
+    foreach (const QString &keyName, keys)
     {
         QJsonValue val = obj.value(keyName);
         (this->*jsonToValue[val.type()])(keyName, val);
@@ -88,10 +89,26 @@ void Models::JSONListItemBinder::valueFromQJsonObject(const QString &keyName, co
 
 void Models::JSONListItemBinder::valueFromQJsonArray(const QString &keyName, const QJsonValue &jsonValue)
 {
+    // IF KEYNAME VALUE IS OF QOBJECT* TYPE AND IS A LISTMODEL
+    // FOR EACH VALUE IN ARRAY CREATE NEW OBJECT OF MODEL->PROTOTYPE->GETNEWITEMINSTANCE
     QJsonArray array = jsonValue.toArray();
-
-    foreach (const QJsonValue &val, array)
-        (this->*jsonToValue[val.type()])(keyName, val);
+    Models::ListModel *tmpModel = NULL;
+    if (this->item->data(this->nameToRoles[keyName.toLocal8Bit()]).type() == QMetaType::QObjectStar &&
+            qobject_cast<Models::SubListedListItem *>(this->item) != NULL &&
+            (tmpModel = qobject_cast<Models::ListModel*>(
+                 qvariant_cast<QObject *>(
+                     this->item->data(this->nameToRoles[keyName.toLocal8Bit()])))) != NULL)
+    {
+        foreach (const QJsonValue &val, array)
+        {
+            Models::ListItem *subItem = tmpModel->getPrototype()->getNewItemInstance(this->item);
+            JSONListItemBinder::fromQJsonValue(val, subItem);
+            qobject_cast<Models::SubListedListItem *>(this->item)->submodel()->appendRow(subItem);
+        }
+    }
+    else
+        foreach (const QJsonValue &val, array)
+            (this->*jsonToValue[val.type()])(keyName, val);
 }
 
 void Models::JSONListItemBinder::valueFromScalar(const QString &keyName, const QJsonValue &jsonValue)

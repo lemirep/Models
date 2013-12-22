@@ -29,7 +29,7 @@ QString Models::SQLiteListItemBinder::toQSqlQuery(Models::ListItem *item, const 
             QVariant val = item->data(roleKey);
 
             queryBase += roles[roleKey];
-            queryValues += (val.type() == QVariant::String || val.type() == QVariant::Url) ?
+            queryValues += (val.type() == QMetaType::QString || val.type() == QMetaType::QUrl) ?
                         ("\'" + val.toString() + "\'") : val.toString();
             queryBase += (i + 1 < roles.count()) ? ", " : ")";
             queryValues += (i + 1 < roles.count()) ? ", " : ");";

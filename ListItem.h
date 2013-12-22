@@ -12,6 +12,8 @@
 namespace Models
 {
 
+class ListModel;
+
 class ListItem : public QObject
 {
     Q_OBJECT
@@ -27,10 +29,11 @@ public :
     QHash<QByteArray, int> roleTypesFromName();
     virtual void triggerItemUpdate();
     virtual bool operator<(const ListItem &nextElem);
+    virtual ListItem* getNewItemInstance(QObject *parent = 0) const = 0;
+    ListItem *getParentItem() const;
 
-//    void fromQSQLRecord(const QSqlRecord &result);
-//    QString toSQLQuery(const QString &table) const;
-//    QSqlQuery toSQLQuery(const QString &table) const;
+protected :
+    ListItem *parentItem;
 
 signals:
     void dataChanged();

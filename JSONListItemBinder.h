@@ -28,11 +28,16 @@
 #ifndef JSONLISTITEM_H
 #define JSONLISTITEM_H
 
+#include "ListModel.h"
 #include "SubListedListItem.h"
 #include <QJsonValue>
+#include <QStringList>
+
 
 namespace Models
 {
+
+class ListModel;
 
 class JSONListItemBinder
 {
