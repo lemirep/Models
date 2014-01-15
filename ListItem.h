@@ -6,8 +6,6 @@
 #include <QHash>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QSqlRecord>
-#include <QSqlQuery>
 
 namespace Models
 {
