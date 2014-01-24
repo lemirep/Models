@@ -40,3 +40,12 @@ bool Models::ListItem::operator<(const Models::ListItem &nextElem)
     return false;
 }
 
+Models::ListItem &Models::ListItem::operator=(const Models::ListItem &other)
+{
+    if (&other != this)
+    {
+        foreach (int role, this->roleNames().keys())
+            this->setData(role, other.data(role));
+    }
+}
+
