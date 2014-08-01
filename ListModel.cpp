@@ -333,7 +333,7 @@ bool        Models::ListModel::removeRows(int row, int count, const QModelIndex 
  * Clears the whole model removing all rows.
  */
 void        Models::ListModel::clear()
-{    
+{
     if (this->items.size() == 0)
         return ;
     this->removeRows(0, this->items.size());

@@ -34,7 +34,7 @@ void Models::ListItem::triggerItemUpdate()
     emit dataChanged();
 }
 
-bool Models::ListItem::operator<(const Models::ListItem &nextElem)
+bool Models::ListItem::operator<(const Models::ListItem &nextElem) const
 {
     Q_UNUSED(nextElem);
     return false;
@@ -47,5 +47,6 @@ Models::ListItem &Models::ListItem::operator=(const Models::ListItem &other)
         foreach (int role, this->roleNames().keys())
             this->setData(role, other.data(role));
     }
+    return *this;
 }
 

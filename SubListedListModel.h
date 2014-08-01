@@ -19,4 +19,6 @@ public:
 
 }
 
+Q_DECLARE_METATYPE(Models::SubListedListModel *)
+
 #endif // SUBLISTEDLISTMODEL_H

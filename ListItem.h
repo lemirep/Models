@@ -26,7 +26,7 @@ public :
     virtual QHash<int, QByteArray> roleNames() const = 0;
     QHash<QByteArray, int> roleTypesFromName();
     virtual void triggerItemUpdate();
-    virtual bool operator<(const ListItem &nextElem);
+    virtual bool operator<(const ListItem &nextElem) const;
     virtual ListItem& operator=(const ListItem &);
     virtual ListItem* getNewItemInstance(QObject *parent = 0) const = 0;
     ListItem *getParentItem() const;

@@ -70,4 +70,6 @@ signals :
 
 }
 
+Q_DECLARE_METATYPE(Models::ListModel *)
+
 #endif // LISTMODEL_H
