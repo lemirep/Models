@@ -31,7 +31,7 @@ public:
     QHash<int, QByteArray>  roleNames() const;
 
     void                    appendRow(ListItem *item);
-    void                    appendRows(QList<ListItem *> &items);
+    void                    appendRows(const QList<ListItem *> &items);
     void                    insertRow(int row, ListItem *item);
     ListItem*               takeRow(int row = -2, const QModelIndex &index = QModelIndex());
     QList<ListItem *>       takeRows(int row = -2, int count = -1, const QModelIndex &index = QModelIndex());

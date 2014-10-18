@@ -254,7 +254,7 @@ void        Models::ListModel::appendRow(Models::ListItem *item)
 /*!
  * Appends several rows \a items to the Model.
  */
-void        Models::ListModel::appendRows(QList<Models::ListItem *> &items)
+void        Models::ListModel::appendRows(const QList<Models::ListItem *> &items)
 {
     if (items.size() == 0)
         return ;
