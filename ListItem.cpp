@@ -5,6 +5,9 @@
 Models::ListItem::ListItem(QObject *parent) : QObject(parent),
     parentItem(qobject_cast<ListItem *>(parent))
 {
+    // So that when returning a ListItem from a QINVOKABLE, we have no issue
+    // with the QML Engine destroying our object
+    QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     if (qobject_cast<ListItem *>(parent) != NULL)
     {
         qDebug() << "Parent is a list item";

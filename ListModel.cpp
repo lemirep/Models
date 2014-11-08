@@ -134,10 +134,15 @@
  */
 Models::ListModel::ListModel(Models::ListItem *prototype, QObject *parent) : QAbstractListModel(parent)
 {
+    // We need to register that metatype so that the QML engine
+    // knows about
+    qRegisterMetaType<Models::ListItem*>("ListItem*");
+
+    // So that we can return ListModel * from a Q_INVOKABLE to QML
+    // without having the QmlEngine take ownership and destroy our object
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
-    this->prototype = prototype;
-    this->sortEnabled = false;
-    this->items = QList<Models::ListItem*>();
+    this->m_prototype = prototype;
+    this->m_sortEnabled = false;
 }
 
 /*!
@@ -145,8 +150,8 @@ Models::ListModel::ListModel(Models::ListItem *prototype, QObject *parent) : QAb
  */
 Models::ListModel::~ListModel()
 {
-    delete this->prototype;
-    this->prototype = NULL;
+    delete this->m_prototype;
+    this->m_prototype = NULL;
     this->clear();
 }
 
@@ -162,7 +167,7 @@ Models::ListModel::~ListModel()
  */
 int         Models::ListModel::rowCount(const QModelIndex &) const
 {
-    return this->items.size();
+    return this->m_items.size();
 }
 
 /*!
@@ -170,8 +175,8 @@ int         Models::ListModel::rowCount(const QModelIndex &) const
  */
 QVariant    Models::ListModel::data(const QModelIndex &index, int role) const
 {
-    if (index.row() >= 0 && index.row() < this->items.size())
-        return this->items.at(index.row())->data(role);
+    if (index.row() >= 0 && index.row() < this->m_items.size())
+        return this->m_items.at(index.row())->data(role);
     return QVariant();
 }
 
@@ -181,8 +186,8 @@ QVariant    Models::ListModel::data(const QModelIndex &index, int role) const
 
 bool    Models::ListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (index.row() >= 0 && index.row() < this->items.size())
-        return this->items.at(index.row())->setData(role, value);
+    if (index.row() >= 0 && index.row() < this->m_items.size())
+        return this->m_items.at(index.row())->setData(role, value);
     return false;
 }
 
@@ -191,7 +196,7 @@ bool    Models::ListModel::setData(const QModelIndex &index, const QVariant &val
  */
 QHash<int, QByteArray>  Models::ListModel::roleNames() const
 {
-        return this->prototype->roleNames();
+        return this->m_prototype->roleNames();
 }
 
 /*!
@@ -202,10 +207,10 @@ Models::ListItem *Models::ListModel::takeRow(int row, const QModelIndex &index)
 {
     if (row == -2) // IF ROW HAS NOT BEEN SPECIFIED TAKE FIRST ITEM
         row = 0;
-    if (row >= 0 && row < this->items.size())
+    if (row >= 0 && row < this->m_items.size())
     {
         beginRemoveRows(index, row, row);
-        Models::ListItem *item = this->items.takeAt(row);
+        Models::ListItem *item = this->m_items.takeAt(row);
         endRemoveRows();
         emit (countChanged(this->rowCount()));
         return item;
@@ -227,12 +232,12 @@ QList<Models::ListItem *> Models::ListModel::takeRows(int row, int count, const 
     if (row == -2) // IF ROW HAS NOT BEEN SPECIFIED TAKE FIRST ITEM
         row = 0;
     if (count == -1)
-        count = this->items.size();
-    if (row >= 0 && count > 0 && (row + count) <= this->items.size())
+        count = this->m_items.size();
+    if (row >= 0 && count > 0 && (row + count) <= this->m_items.size())
     {
         beginRemoveRows(index, row, row + count - 1);
         for (int i = 0; i < count; i++)
-            items << this->items.takeAt(row);
+            items << this->m_items.takeAt(row);
         endRemoveRows();
         emit (countChanged(this->rowCount()));
     }
@@ -263,7 +268,7 @@ void        Models::ListModel::appendRows(const QList<Models::ListItem *> &items
     foreach(Models::ListItem *item, items)
     {
         QObject::connect(item, SIGNAL(dataChanged()), this, SLOT(updateItem()));
-        this->items.append(item);
+        this->m_items.append(item);
     }
     // NEEDED TO UPDATE VIEW
     this->endInsertRows();
@@ -280,7 +285,7 @@ void       Models::ListModel::insertRow(int row, Models::ListItem *item)
         return ;
     this->beginInsertRows(QModelIndex(), row, row);
     QObject::connect(item, SIGNAL(dataChanged()), this, SLOT(updateItem()));
-    this->items.insert(row, item);
+    this->m_items.insert(row, item);
     this->endInsertRows();
     this->sort();
     emit (countChanged(this->rowCount()));
@@ -293,10 +298,10 @@ void       Models::ListModel::insertRow(int row, Models::ListItem *item)
  */
 bool        Models::ListModel::removeRow(int row, const QModelIndex &index)
 {
-    if (row >= 0 && row < this->items.size())
+    if (row >= 0 && row < this->m_items.size())
     {
         beginRemoveRows(index, row, row);
-        Models::ListItem *item = this->items.takeAt(row);
+        Models::ListItem *item = this->m_items.takeAt(row);
         delete item;
         item = NULL;
         endRemoveRows();
@@ -313,12 +318,12 @@ bool        Models::ListModel::removeRow(int row, const QModelIndex &index)
  */
 bool        Models::ListModel::removeRows(int row, int count, const QModelIndex &index)
 {
-    if (row >= 0 && count > 0 && (row + count) <= this->items.size())
+    if (row >= 0 && count > 0 && (row + count) <= this->m_items.size())
     {
         beginRemoveRows(index, row, row + count - 1);
         for (int i = 0; i < count; i++)
         {
-            Models::ListItem *item = this->items.takeAt(row);
+            Models::ListItem *item = this->m_items.takeAt(row);
             delete item;
             item = NULL;
         }
@@ -334,48 +339,44 @@ bool        Models::ListModel::removeRows(int row, int count, const QModelIndex 
  */
 void        Models::ListModel::clear()
 {
-    if (this->items.size() == 0)
+    if (this->m_items.size() == 0)
         return ;
-    this->removeRows(0, this->items.size());
+    this->removeRows(0, this->m_items.size());
     emit (countChanged(this->rowCount()));
 }
 
 bool Models::ListModel::sortingEnabled() const
 {
-    return this->sortEnabled;
+    return this->m_sortEnabled;
 }
 
 void Models::ListModel::setSorting(bool value)
 {
     if (value == this->sortingEnabled())
         return;
-    this->sortEnabled = value;
+    this->m_sortEnabled = value;
     emit sortingChanged(value);
     this->sort();
 }
 
 /*!
- * Returns the ListItem prototype associated to the given model.
+ * Returns the ListItem otype associated to the given model.
  */
 
 Models::ListItem *Models::ListModel::getPrototype() const
 {
-    return this->prototype;
+    return this->m_prototype;
 }
 
-bool compareFunc(void *a, void *b)
-{
-    return *reinterpret_cast<Models::ListItem *>(a) < *reinterpret_cast<Models::ListItem *>(b);
-}
 /*!
  * Sorts the elements of the models
  */
 void Models::ListModel::sort()
 {
-    if (this->sortEnabled)
+    if (this->m_sortEnabled)
     {
-        qSort(this->items.begin(), this->items.end(), compareFunc);
-        foreach (Models::ListItem *item, this->items)
+        qSort(this->m_items.begin(), this->m_items.end(), compareFunc);
+        foreach (Models::ListItem *item, this->m_items)
         {
             QModelIndex index = this->indexFromItem(item);
             if (index.isValid())
@@ -391,8 +392,8 @@ QModelIndex     Models::ListModel::indexFromItem(Models::ListItem *item) const
 {
     if (item != NULL)
     {
-        for (int i = 0; i < this->items.size(); i++)
-            if (this->items.at(i) == item)
+        for (int i = 0; i < this->m_items.size(); i++)
+            if (this->m_items.at(i) == item)
                 return index(i);
     }
     return QModelIndex();
@@ -403,7 +404,7 @@ QModelIndex     Models::ListModel::indexFromItem(Models::ListItem *item) const
  */
 Models::ListItem *  Models::ListModel::find(int itemId) const
 {
-    foreach(Models::ListItem *item, this->items)
+    foreach(Models::ListItem *item, this->m_items)
         if (item->id() == itemId)
             return item;
     return NULL;
@@ -414,8 +415,8 @@ Models::ListItem *  Models::ListModel::find(int itemId) const
 int         Models::ListModel::getRowFromItem(ListItem *item) const
 {
     if (item != NULL)
-        for (int i = 0; i < this->items.size(); i++)
-            if (this->items.at(i) == item)
+        for (int i = 0; i < this->m_items.size(); i++)
+            if (this->m_items.at(i) == item)
                 return i;
     return -1;
 }
@@ -425,7 +426,7 @@ int         Models::ListModel::getRowFromItem(ListItem *item) const
  */
 QList<Models::ListItem *>   Models::ListModel::toList() const
 {
-    return this->items;
+    return this->m_items;
 }
 
 /*!
@@ -440,22 +441,13 @@ void        Models::ListModel::updateItem()
 }
 
 /*!
- * Returns a QVariant containg the data of the row item at \a index in the model.
+ * Returns the row item at \a index in the model.
  */
-QVariant    Models::ListModel::get(int index)
+Models::ListItem   *Models::ListModel::get(int index) const
 {
-    if (index >= this->items.size() || index < 0)
-        return QVariant();
-    Models::ListItem * item = this->items.at(index);
-    QMap<QString, QVariant> itemData;
-    QHashIterator<int, QByteArray> hashItr(item->roleNames());
-
-    while(hashItr.hasNext())
-    {
-        hashItr.next();
-        itemData.insert(hashItr.value(),QVariant(item->data(hashItr.key())));
-    }
-    return QVariant(itemData);
+    if (index >= this->m_items.size() || index < 0)
+        return Q_NULLPTR;
+    return this->m_items.at(index);
 }
 
 /*!
@@ -468,4 +460,9 @@ int         Models::ListModel::rowIndexFromId(int id)
     if (item)
         return indexFromItem(item).row();
     return -1;
+}
+
+bool compareFunc(void *a, void *b)
+{
+    return *static_cast<Models::ListItem *>(a) < *static_cast<Models::ListItem *>(b);
 }

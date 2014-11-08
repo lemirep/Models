@@ -43,7 +43,7 @@ public:
     QModelIndex             indexFromItem(ListItem *item) const;
     QList<ListItem *>       toList() const;
 
-    Q_INVOKABLE QVariant    get(int index);
+    Q_INVOKABLE ListItem*   get(int index) const;
     Q_INVOKABLE int         rowIndexFromId(int id);
     Q_INVOKABLE void        clear();
 
@@ -53,9 +53,9 @@ public:
     ListItem*               getPrototype() const;
 
 protected:
-    ListItem *prototype;
-    QList<ListItem *> items;
-    bool        sortEnabled;
+    ListItem *m_prototype;
+    QList<ListItem *> m_items;
+    bool        m_sortEnabled;
 
 private:
     void                    sort();
